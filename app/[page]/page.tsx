@@ -33,17 +33,14 @@ export default async function Page(props: {
 
   return (
     <>
-      <h1 className="mb-8 text-5xl font-bold">{page.title}</h1>
-      <Prose className="mb-8" html={page.body} />
-      <p className="text-sm italic">
-        {`This document was last updated on ${new Intl.DateTimeFormat(
-          undefined,
-          {
-            year: "numeric",
-            month: "long",
-            day: "numeric",
-          },
-        ).format(new Date(page.updatedAt))}.`}
+      <h1 className="text-5xl font-light md:text-6xl">{page.title}</h1>
+      <Prose className="mt-8" html={page.body} />
+      <p className="mt-8 font-sans text-sm text-neutral-500 dark:text-neutral-400">
+        {`Laatst bijgewerkt op ${new Intl.DateTimeFormat("nl-NL", {
+          year: "numeric",
+          month: "long",
+          day: "numeric",
+        }).format(new Date(page.updatedAt))}.`}
       </p>
     </>
   );

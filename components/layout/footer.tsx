@@ -1,11 +1,22 @@
 import Link from "next/link";
 
 import FooterMenu from "components/layout/footer-menu";
-import LogoSquare from "components/logo-square";
+import PanistoLogo from "components/panisto-logo";
 import { getMenu } from "lib/shopify";
 import { Suspense } from "react";
 
 const { COMPANY_NAME, SITE_NAME } = process.env;
+
+const policyLinks = [
+  { title: "Verzending", href: "/about" },
+  { title: "Retourneren", href: "/about" },
+  { title: "Contact", href: "/about" },
+];
+
+const socialLinks = [
+  { title: "Instagram", href: "https://instagram.com" },
+  { title: "Facebook", href: "https://facebook.com" },
+];
 
 export default async function Footer() {
   const currentYear = new Date().getFullYear();
@@ -17,40 +28,80 @@ export default async function Footer() {
 
   return (
     <footer className="text-sm text-neutral-500 dark:text-neutral-400">
-      <div className="mx-auto flex w-full max-w-7xl flex-col gap-6 border-t border-neutral-200 px-6 py-12 text-sm md:flex-row md:gap-12 md:px-4 min-[1320px]:px-0 dark:border-neutral-700">
-        <div>
-          <Link
-            className="flex items-center gap-2 text-black md:pt-1 dark:text-white"
-            href="/"
-          >
-            <LogoSquare size="sm" />
-            <span className="uppercase">{SITE_NAME}</span>
-          </Link>
-        </div>
-        <Suspense
-          fallback={
-            <div className="flex h-[188px] w-[200px] flex-col gap-2">
-              <div className={skeleton} />
-              <div className={skeleton} />
-              <div className={skeleton} />
-              <div className={skeleton} />
-              <div className={skeleton} />
-              <div className={skeleton} />
+      <div className="mx-auto w-full max-w-7xl px-6 py-12 md:px-4 min-[1320px]:px-0">
+        <div className="grid gap-10 border-t border-neutral-200 pt-12 md:grid-cols-4 dark:border-neutral-700">
+          <div>
+            <PanistoLogo size="footer" />
+            <p className="mt-4 max-w-xs font-sans leading-relaxed">
+              Specialty koffie en thee — met aandacht voor herkomst en smaak.
+            </p>
+            <div className="mt-4 flex gap-4">
+              {socialLinks.map((link) => (
+                <a
+                  key={link.title}
+                  href={link.href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline-offset-4 hover:underline"
+                >
+                  {link.title}
+                </a>
+              ))}
             </div>
-          }
-        >
-          <FooterMenu menu={menu} />
-        </Suspense>
-        <div className="md:ml-auto">
-          <a
-            className="flex h-8 w-max flex-none items-center justify-center rounded-md border border-neutral-200 bg-white text-xs text-black dark:border-neutral-700 dark:bg-black dark:text-white"
-            aria-label="Deploy on Vercel"
-            href="https://vercel.com/templates/next.js/nextjs-commerce"
-          >
-            <span className="px-3">▲</span>
-            <hr className="h-full border-r border-neutral-200 dark:border-neutral-700" />
-            <span className="px-3">Deploy</span>
-          </a>
+          </div>
+
+          <div>
+            <h3 className="mb-3 text-xs font-medium uppercase tracking-wider text-neutral-400">
+              Shop
+            </h3>
+            <Suspense
+              fallback={
+                <div className="flex flex-col gap-2">
+                  <div className={skeleton} />
+                  <div className={skeleton} />
+                  <div className={skeleton} />
+                </div>
+              }
+            >
+              <FooterMenu menu={menu} />
+            </Suspense>
+          </div>
+
+          <div>
+            <h3 className="mb-3 text-xs font-medium uppercase tracking-wider text-neutral-400">
+              Klantenservice
+            </h3>
+            <ul>
+              {policyLinks.map((link) => (
+                <li key={link.title}>
+                  <Link
+                    href={link.href}
+                    className="block p-2 underline-offset-4 hover:text-accent hover:underline md:inline-block md:p-0 md:py-1.5"
+                  >
+                    {link.title}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          <div>
+            <h3 className="mb-3 text-xs font-medium uppercase tracking-wider text-neutral-400">
+              Contact
+            </h3>
+            <ul className="font-sans leading-relaxed">
+              <li>
+                <a
+                  href="mailto:hallo@panisto.nl"
+                  className="underline-offset-4 hover:underline"
+                >
+                  hallo@panisto.nl
+                </a>
+              </li>
+              <li className="mt-1">Amsterdam, NL</li>
+              <li className="mt-1">Ma–Za 08:00–18:00</li>
+            </ul>
+          </div>
         </div>
       </div>
       <div className="border-t border-neutral-200 py-6 text-sm dark:border-neutral-700">
@@ -60,16 +111,7 @@ export default async function Footer() {
             {copyrightName.length && !copyrightName.endsWith(".")
               ? "."
               : ""}{" "}
-            All rights reserved.
-          </p>
-          <hr className="mx-4 hidden h-4 w-[1px] border-l border-neutral-400 md:inline-block" />
-          <p>
-            <a href="https://github.com/vercel/commerce">View the source</a>
-          </p>
-          <p className="md:ml-auto">
-            <a href="https://vercel.com" className="text-black dark:text-white">
-              Created by ▲ Vercel
-            </a>
+            Alle rechten voorbehouden.
           </p>
         </div>
       </div>

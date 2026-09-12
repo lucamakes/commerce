@@ -1,61 +1,78 @@
 import {
-  HIDDEN_PRODUCT_TAG,
-  SHOPIFY_GRAPHQL_API_ENDPOINT,
-  TAGS,
+    HIDDEN_PRODUCT_TAG,
+    SHOPIFY_GRAPHQL_API_ENDPOINT,
+    TAGS,
 } from "lib/constants";
+import {
+    addToLocalCart,
+    createLocalCart,
+    getLocalCart,
+    removeFromLocalCart,
+    updateLocalCart,
+} from "lib/local/cart";
+import { isLocalMode } from "lib/local/index";
+import {
+    getLocalCollection,
+    getLocalCollectionProducts,
+    getLocalCollections,
+    getLocalMenu,
+    getLocalProduct,
+    getLocalProductRecommendations,
+    getLocalProducts,
+} from "lib/local/products";
 import { isShopifyError } from "lib/type-guards";
 import { ensureStartsWith } from "lib/utils";
 import {
-  unstable_cacheLife as cacheLife,
-  unstable_cacheTag as cacheTag,
-  revalidateTag,
+    unstable_cacheLife as cacheLife,
+    unstable_cacheTag as cacheTag,
+    revalidateTag,
 } from "next/cache";
 import { cookies, headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import {
-  addToCartMutation,
-  createCartMutation,
-  editCartItemsMutation,
-  removeFromCartMutation,
+    addToCartMutation,
+    createCartMutation,
+    editCartItemsMutation,
+    removeFromCartMutation,
 } from "./mutations/cart";
 import { getCartQuery } from "./queries/cart";
 import {
-  getCollectionProductsQuery,
-  getCollectionQuery,
-  getCollectionsQuery,
+    getCollectionProductsQuery,
+    getCollectionQuery,
+    getCollectionsQuery,
 } from "./queries/collection";
 import { getMenuQuery } from "./queries/menu";
 import { getPageQuery, getPagesQuery } from "./queries/page";
 import {
-  getProductQuery,
-  getProductRecommendationsQuery,
-  getProductsQuery,
+    getProductQuery,
+    getProductRecommendationsQuery,
+    getProductsQuery,
 } from "./queries/product";
 import {
-  Cart,
-  Collection,
-  Connection,
-  Image,
-  Menu,
-  Page,
-  Product,
-  ShopifyAddToCartOperation,
-  ShopifyCart,
-  ShopifyCartOperation,
-  ShopifyCollection,
-  ShopifyCollectionOperation,
-  ShopifyCollectionProductsOperation,
-  ShopifyCollectionsOperation,
-  ShopifyCreateCartOperation,
-  ShopifyMenuOperation,
-  ShopifyPageOperation,
-  ShopifyPagesOperation,
-  ShopifyProduct,
-  ShopifyProductOperation,
-  ShopifyProductRecommendationsOperation,
-  ShopifyProductsOperation,
-  ShopifyRemoveFromCartOperation,
-  ShopifyUpdateCartOperation,
+    Cart,
+    Collection,
+    Connection,
+    Image,
+    Menu,
+    Page,
+    Product,
+    ShopifyAddToCartOperation,
+    ShopifyCart,
+    ShopifyCartOperation,
+    ShopifyCollection,
+    ShopifyCollectionOperation,
+    ShopifyCollectionProductsOperation,
+    ShopifyCollectionsOperation,
+    ShopifyCreateCartOperation,
+    ShopifyMenuOperation,
+    ShopifyPageOperation,
+    ShopifyPagesOperation,
+    ShopifyProduct,
+    ShopifyProductOperation,
+    ShopifyProductRecommendationsOperation,
+    ShopifyProductsOperation,
+    ShopifyRemoveFromCartOperation,
+    ShopifyUpdateCartOperation,
 } from "./types";
 
 const domain = process.env.SHOPIFY_STORE_DOMAIN
@@ -218,6 +235,10 @@ const reshapeProducts = (products: ShopifyProduct[]) => {
 };
 
 export async function createCart(): Promise<Cart> {
+  if (isLocalMode()) {
+    return createLocalCart();
+  }
+
   const res = await shopifyFetch<ShopifyCreateCartOperation>({
     query: createCartMutation,
   });
@@ -228,6 +249,10 @@ export async function createCart(): Promise<Cart> {
 export async function addToCart(
   lines: { merchandiseId: string; quantity: number }[]
 ): Promise<Cart> {
+  if (isLocalMode()) {
+    return addToLocalCart(lines);
+  }
+
   const cartId = (await cookies()).get("cartId")?.value!;
   const res = await shopifyFetch<ShopifyAddToCartOperation>({
     query: addToCartMutation,
@@ -240,6 +265,10 @@ export async function addToCart(
 }
 
 export async function removeFromCart(lineIds: string[]): Promise<Cart> {
+  if (isLocalMode()) {
+    return removeFromLocalCart(lineIds);
+  }
+
   const cartId = (await cookies()).get("cartId")?.value!;
   const res = await shopifyFetch<ShopifyRemoveFromCartOperation>({
     query: removeFromCartMutation,
@@ -255,6 +284,10 @@ export async function removeFromCart(lineIds: string[]): Promise<Cart> {
 export async function updateCart(
   lines: { id: string; merchandiseId: string; quantity: number }[]
 ): Promise<Cart> {
+  if (isLocalMode()) {
+    return updateLocalCart(lines);
+  }
+
   const cartId = (await cookies()).get("cartId")?.value!;
   const res = await shopifyFetch<ShopifyUpdateCartOperation>({
     query: editCartItemsMutation,
@@ -271,6 +304,10 @@ export async function getCart(): Promise<Cart | undefined> {
   "use cache: private";
   cacheTag(TAGS.cart);
   cacheLife("seconds");
+
+  if (isLocalMode()) {
+    return getLocalCart();
+  }
 
   const cartId = (await cookies()).get("cartId")?.value;
 
@@ -298,6 +335,10 @@ export async function getCollection(
   cacheTag(TAGS.collections);
   cacheLife("days");
 
+  if (isLocalMode()) {
+    return getLocalCollection(handle);
+  }
+
   const res = await shopifyFetch<ShopifyCollectionOperation>({
     query: getCollectionQuery,
     variables: {
@@ -321,11 +362,8 @@ export async function getCollectionProducts({
   cacheTag(TAGS.collections, TAGS.products);
   cacheLife("days");
 
-  if (!endpoint) {
-    console.log(
-      `Skipping getCollectionProducts for '${collection}' - Shopify not configured`
-    );
-    return [];
+  if (isLocalMode()) {
+    return getLocalCollectionProducts({ collection, reverse, sortKey });
   }
 
   const res = await shopifyFetch<ShopifyCollectionProductsOperation>({
@@ -352,21 +390,8 @@ export async function getCollections(): Promise<Collection[]> {
   cacheTag(TAGS.collections);
   cacheLife("days");
 
-  if (!endpoint) {
-    console.log("Skipping getCollections - Shopify not configured");
-    return [
-      {
-        handle: "",
-        title: "All",
-        description: "All products",
-        seo: {
-          title: "All",
-          description: "All products",
-        },
-        path: "/search",
-        updatedAt: new Date().toISOString(),
-      },
-    ];
+  if (isLocalMode()) {
+    return getLocalCollections();
   }
 
   const res = await shopifyFetch<ShopifyCollectionsOperation>({
@@ -376,11 +401,11 @@ export async function getCollections(): Promise<Collection[]> {
   const collections = [
     {
       handle: "",
-      title: "All",
-      description: "All products",
+      title: "Alles",
+      description: "Alle producten",
       seo: {
-        title: "All",
-        description: "All products",
+        title: "Alles",
+        description: "Alle producten",
       },
       path: "/search",
       updatedAt: new Date().toISOString(),
@@ -400,9 +425,8 @@ export async function getMenu(handle: string): Promise<Menu[]> {
   cacheTag(TAGS.collections);
   cacheLife("days");
 
-  if (!endpoint) {
-    console.log(`Skipping getMenu for '${handle}' - Shopify not configured`);
-    return [];
+  if (isLocalMode()) {
+    return getLocalMenu(handle);
   }
 
   const res = await shopifyFetch<ShopifyMenuOperation>({
@@ -445,9 +469,8 @@ export async function getProduct(handle: string): Promise<Product | undefined> {
   cacheTag(TAGS.products);
   cacheLife("days");
 
-  if (!endpoint) {
-    console.log(`Skipping getProduct for '${handle}' - Shopify not configured`);
-    return undefined;
+  if (isLocalMode()) {
+    return getLocalProduct(handle);
   }
 
   const res = await shopifyFetch<ShopifyProductOperation>({
@@ -466,6 +489,10 @@ export async function getProductRecommendations(
   "use cache";
   cacheTag(TAGS.products);
   cacheLife("days");
+
+  if (isLocalMode()) {
+    return getLocalProductRecommendations(productId);
+  }
 
   const res = await shopifyFetch<ShopifyProductRecommendationsOperation>({
     query: getProductRecommendationsQuery,
@@ -489,6 +516,10 @@ export async function getProducts({
   "use cache";
   cacheTag(TAGS.products);
   cacheLife("days");
+
+  if (isLocalMode()) {
+    return getLocalCollectionProducts({ collection: "", query, reverse });
+  }
 
   const res = await shopifyFetch<ShopifyProductsOperation>({
     query: getProductsQuery,

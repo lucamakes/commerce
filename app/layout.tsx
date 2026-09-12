@@ -1,12 +1,23 @@
 import { CartProvider } from "components/cart/cart-context";
 import { Navbar } from "components/layout/navbar";
-import { WelcomeToast } from "components/welcome-toast";
-import { GeistSans } from "geist/font/sans";
+import { Cormorant_Garamond, DM_Sans } from "next/font/google";
+
+const cormorant = Cormorant_Garamond({
+  subsets: ["latin"],
+  variable: "--font-cormorant",
+  display: "swap",
+});
+
+const dmSans = DM_Sans({
+  subsets: ["latin"],
+  variable: "--font-dm-sans",
+  display: "swap",
+});
 import { getCart } from "lib/shopify";
+import { baseUrl } from "lib/utils";
 import { ReactNode } from "react";
 import { Toaster } from "sonner";
 import "./globals.css";
-import { baseUrl } from "lib/utils";
 
 const { SITE_NAME } = process.env;
 
@@ -31,14 +42,13 @@ export default async function RootLayout({
   const cart = getCart();
 
   return (
-    <html lang="en" className={GeistSans.variable}>
-      <body className="bg-neutral-50 text-black selection:bg-teal-300 dark:bg-neutral-900 dark:text-white dark:selection:bg-pink-500 dark:selection:text-white">
+    <html lang="nl" className={`${dmSans.variable} ${cormorant.variable}`}>
+      <body className="bg-neutral-50 font-sans text-black selection:bg-accent-light selection:text-white dark:bg-neutral-900 dark:text-white">
         <CartProvider cartPromise={cart}>
           <Navbar />
           <main>
             {children}
             <Toaster closeButton />
-            <WelcomeToast />
           </main>
         </CartProvider>
       </body>

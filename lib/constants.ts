@@ -6,34 +6,63 @@ export type SortFilterItem = {
 };
 
 export const defaultSort: SortFilterItem = {
-  title: "Relevance",
+  title: "Relevantie",
   slug: null,
   sortKey: "RELEVANCE",
   reverse: false,
 };
 
-export const sorting: SortFilterItem[] = [
-  defaultSort,
+export const catalogDefaultSort: SortFilterItem = {
+  title: "Meest verkocht",
+  slug: null,
+  sortKey: "BEST_SELLING",
+  reverse: false,
+};
+
+export const catalogSorting: SortFilterItem[] = [
+  catalogDefaultSort,
   {
-    title: "Trending",
-    slug: "trending-desc",
-    sortKey: "BEST_SELLING",
-    reverse: false,
-  }, // asc
-  {
-    title: "Latest arrivals",
+    title: "Nieuwste",
     slug: "latest-desc",
     sortKey: "CREATED_AT",
     reverse: true,
   },
   {
-    title: "Price: Low to high",
+    title: "Prijs: laag naar hoog",
     slug: "price-asc",
     sortKey: "PRICE",
     reverse: false,
-  }, // asc
+  },
   {
-    title: "Price: High to low",
+    title: "Prijs: hoog naar laag",
+    slug: "price-desc",
+    sortKey: "PRICE",
+    reverse: true,
+  },
+];
+
+export const sorting: SortFilterItem[] = [
+  defaultSort,
+  {
+    title: "Populair",
+    slug: "trending-desc",
+    sortKey: "BEST_SELLING",
+    reverse: false,
+  },
+  {
+    title: "Nieuwste",
+    slug: "latest-desc",
+    sortKey: "CREATED_AT",
+    reverse: true,
+  },
+  {
+    title: "Prijs: laag naar hoog",
+    slug: "price-asc",
+    sortKey: "PRICE",
+    reverse: false,
+  },
+  {
+    title: "Prijs: hoog naar laag",
     slug: "price-desc",
     sortKey: "PRICE",
     reverse: true,
