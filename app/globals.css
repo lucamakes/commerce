@@ -4,11 +4,14 @@
 @plugin "@tailwindcss/typography";
 
 @theme {
-  --font-heading: var(--font-cormorant), ui-serif, Georgia, serif;
-  --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
   --color-accent: #8b6914;
   --color-accent-hover: #6e5410;
   --color-accent-light: #b8943f;
+}
+
+@theme inline {
+  --font-heading: var(--font-cormorant), ui-serif, Georgia, serif;
+  --font-sans: var(--font-dm-sans), ui-sans-serif, system-ui, sans-serif;
 }
 
 @layer base {
@@ -26,7 +29,7 @@
   h4,
   h5,
   h6 {
-    font-family: var(--font-heading);
+    @apply font-heading;
   }
 }
 
