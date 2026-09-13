@@ -25,6 +25,7 @@ import { ensureStartsWith } from "lib/utils";
 import {
     unstable_cacheLife as cacheLife,
     unstable_cacheTag as cacheTag,
+    revalidatePath,
     revalidateTag,
 } from "next/cache";
 import { cookies, headers } from "next/headers";
@@ -110,6 +111,7 @@ export async function shopifyFetch<T>({
         ...(query && { query }),
         ...(variables && { variables }),
       }),
+      cache: "no-store",
     });
 
     const body = await result.json();
@@ -333,7 +335,7 @@ export async function getCollection(
 ): Promise<Collection | undefined> {
   "use cache";
   cacheTag(TAGS.collections);
-  cacheLife("days");
+  cacheLife({ stale: 0, revalidate: 60, expire: 3600 });
 
   if (isLocalMode()) {
     return getLocalCollection(handle);
@@ -360,7 +362,7 @@ export async function getCollectionProducts({
 }): Promise<Product[]> {
   "use cache";
   cacheTag(TAGS.collections, TAGS.products);
-  cacheLife("days");
+  cacheLife({ stale: 0, revalidate: 60, expire: 3600 });
 
   if (isLocalMode()) {
     return getLocalCollectionProducts({ collection, reverse, sortKey });
@@ -388,7 +390,7 @@ export async function getCollectionProducts({
 export async function getCollections(): Promise<Collection[]> {
   "use cache";
   cacheTag(TAGS.collections);
-  cacheLife("days");
+  cacheLife({ stale: 0, revalidate: 60, expire: 3600 });
 
   if (isLocalMode()) {
     return getLocalCollections();
@@ -423,7 +425,7 @@ export async function getCollections(): Promise<Collection[]> {
 export async function getMenu(handle: string): Promise<Menu[]> {
   "use cache";
   cacheTag(TAGS.collections);
-  cacheLife("days");
+  cacheLife({ stale: 0, revalidate: 60, expire: 3600 });
 
   if (isLocalMode()) {
     return getLocalMenu(handle);
@@ -467,7 +469,7 @@ export async function getPages(): Promise<Page[]> {
 export async function getProduct(handle: string): Promise<Product | undefined> {
   "use cache";
   cacheTag(TAGS.products);
-  cacheLife("days");
+  cacheLife({ stale: 0, revalidate: 60, expire: 3600 });
 
   if (isLocalMode()) {
     return getLocalProduct(handle);
@@ -488,7 +490,7 @@ export async function getProductRecommendations(
 ): Promise<Product[]> {
   "use cache";
   cacheTag(TAGS.products);
-  cacheLife("days");
+  cacheLife({ stale: 0, revalidate: 60, expire: 3600 });
 
   if (isLocalMode()) {
     return getLocalProductRecommendations(productId);
@@ -515,7 +517,7 @@ export async function getProducts({
 }): Promise<Product[]> {
   "use cache";
   cacheTag(TAGS.products);
-  cacheLife("days");
+  cacheLife({ stale: 0, revalidate: 60, expire: 3600 });
 
   if (isLocalMode()) {
     return getLocalCollectionProducts({ collection: "", query, reverse });
@@ -547,28 +549,31 @@ export async function revalidate(req: NextRequest): Promise<NextResponse> {
     "products/delete",
     "products/update",
   ];
-  const topic = (await headers()).get("x-shopify-topic") || "unknown";
+  const topic = (await headers()).get("x-shopify-topic") || "";
   const secret = req.nextUrl.searchParams.get("secret");
   const isCollectionUpdate = collectionWebhooks.includes(topic);
   const isProductUpdate = productWebhooks.includes(topic);
+  const isManual = !topic;
 
   if (!secret || secret !== process.env.SHOPIFY_REVALIDATION_SECRET) {
     console.error("Invalid revalidation secret.");
     return NextResponse.json({ status: 401 });
   }
 
-  if (!isCollectionUpdate && !isProductUpdate) {
+  if (!isCollectionUpdate && !isProductUpdate && !isManual) {
     // We don't need to revalidate anything for any other topics.
     return NextResponse.json({ status: 200 });
   }
 
-  if (isCollectionUpdate) {
+  if (isCollectionUpdate || isManual) {
     revalidateTag(TAGS.collections, "seconds");
   }
 
-  if (isProductUpdate) {
+  if (isProductUpdate || isManual) {
     revalidateTag(TAGS.products, "seconds");
   }
+
+  revalidatePath("/", "layout");
 
   return NextResponse.json({ status: 200, revalidated: true, now: Date.now() });
 }
