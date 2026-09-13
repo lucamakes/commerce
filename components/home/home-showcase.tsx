@@ -1,12 +1,11 @@
 import Footer from "components/layout/footer";
 import { Suspense } from "react";
+import { BestSellers } from "./best-sellers";
 import { CollectionCards } from "./collection-cards";
-import { FeaturedCoffee } from "./featured-coffee";
-import { FeaturedTea } from "./featured-tea";
+import { FinalCta } from "./final-cta";
 import { Hero } from "./hero";
-import { NewsletterSignup } from "./newsletter-signup";
-import { SocialProof } from "./social-proof";
 import { StorySection } from "./story-section";
+import { WhyUs } from "./why-us";
 
 export function HomeShowcase() {
   return (
@@ -14,14 +13,11 @@ export function HomeShowcase() {
       <Hero />
       <CollectionCards />
       <Suspense fallback={null}>
-        <FeaturedCoffee />
+        <BestSellers />
       </Suspense>
-      <StorySection />
-      <Suspense fallback={null}>
-        <FeaturedTea />
-      </Suspense>
-      <SocialProof />
-      <NewsletterSignup />
+      <WhyUs />
+      <StorySection showCta={false} />
+      <FinalCta />
       <Footer />
     </>
   );

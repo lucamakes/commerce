@@ -5,6 +5,7 @@ import { ShoppingCartIcon, XMarkIcon } from "@heroicons/react/24/outline";
 import clsx from "clsx";
 import LoadingDots from "components/loading-dots";
 import Price from "components/price";
+import { COMPANY } from "lib/company";
 import { DEFAULT_OPTION } from "lib/constants";
 import { createUrl } from "lib/utils";
 import Image from "next/image";
@@ -203,9 +204,30 @@ export default function CartModal({ inverted }: { inverted?: boolean }) {
                       />
                     </div>
                     <div className="mb-3 flex items-center justify-between border-b border-neutral-200 pb-1 pt-1 dark:border-neutral-700">
-                      <p>Verzending</p>
+                      <p>
+                        <Link
+                          href="/verzending"
+                          className="underline-offset-4 hover:text-accent hover:underline"
+                          onClick={closeCart}
+                        >
+                          Verzending
+                        </Link>
+                      </p>
                       <p className="text-right">Berekend bij checkout</p>
                     </div>
+                    <p className="mb-3 text-xs leading-relaxed">
+                      Nederland {COMPANY.shipping.netherlands.cost}, gratis
+                      vanaf {COMPANY.shipping.netherlands.freeFrom}.{" "}
+                      {COMPANY.returns.coolingOffDays} dagen bedenktijd — zie{" "}
+                      <Link
+                        href="/retourneren"
+                        className="underline-offset-4 hover:text-accent hover:underline"
+                        onClick={closeCart}
+                      >
+                        retourneren
+                      </Link>
+                      .
+                    </p>
                     <div className="mb-3 flex items-center justify-between border-b border-neutral-200 pb-1 pt-1 dark:border-neutral-700">
                       <p>Totaal</p>
                       <Price
@@ -230,7 +252,7 @@ export default function CartModal({ inverted }: { inverted?: boolean }) {
 
 function CloseCart({ className }: { className?: string }) {
   return (
-    <div className="relative flex h-11 w-11 items-center justify-center border border-neutral-200 text-black transition-colors dark:border-neutral-700 dark:text-white">
+    <div className="relative flex h-11 w-11 items-center justify-center text-black transition-colors dark:text-white">
       <XMarkIcon
         className={clsx(
           "h-6 transition-all ease-in-out hover:scale-110",

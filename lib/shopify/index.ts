@@ -1,79 +1,79 @@
 import {
-    HIDDEN_PRODUCT_TAG,
-    SHOPIFY_GRAPHQL_API_ENDPOINT,
-    TAGS,
+  HIDDEN_PRODUCT_TAG,
+  SHOPIFY_GRAPHQL_API_ENDPOINT,
+  TAGS,
 } from "lib/constants";
 import {
-    addToLocalCart,
-    createLocalCart,
-    getLocalCart,
-    removeFromLocalCart,
-    updateLocalCart,
+  addToLocalCart,
+  createLocalCart,
+  getLocalCart,
+  removeFromLocalCart,
+  updateLocalCart,
 } from "lib/local/cart";
 import { isLocalMode } from "lib/local/index";
 import {
-    getLocalCollection,
-    getLocalCollectionProducts,
-    getLocalCollections,
-    getLocalMenu,
-    getLocalProduct,
-    getLocalProductRecommendations,
-    getLocalProducts,
+  getLocalCollection,
+  getLocalCollectionProducts,
+  getLocalCollections,
+  getLocalMenu,
+  getLocalProduct,
+  getLocalProductRecommendations,
+  getLocalProducts,
 } from "lib/local/products";
 import { isShopifyError } from "lib/type-guards";
 import { ensureStartsWith } from "lib/utils";
 import {
-    unstable_cacheLife as cacheLife,
-    unstable_cacheTag as cacheTag,
-    revalidatePath,
-    revalidateTag,
+  unstable_cacheLife as cacheLife,
+  unstable_cacheTag as cacheTag,
+  revalidatePath,
+  revalidateTag,
 } from "next/cache";
 import { cookies, headers } from "next/headers";
 import { NextRequest, NextResponse } from "next/server";
 import {
-    addToCartMutation,
-    createCartMutation,
-    editCartItemsMutation,
-    removeFromCartMutation,
+  addToCartMutation,
+  createCartMutation,
+  editCartItemsMutation,
+  removeFromCartMutation,
 } from "./mutations/cart";
 import { getCartQuery } from "./queries/cart";
 import {
-    getCollectionProductsQuery,
-    getCollectionQuery,
-    getCollectionsQuery,
+  getCollectionProductsQuery,
+  getCollectionQuery,
+  getCollectionsQuery,
 } from "./queries/collection";
 import { getMenuQuery } from "./queries/menu";
 import { getPageQuery, getPagesQuery } from "./queries/page";
 import {
-    getProductQuery,
-    getProductRecommendationsQuery,
-    getProductsQuery,
+  getProductQuery,
+  getProductRecommendationsQuery,
+  getProductsQuery,
 } from "./queries/product";
 import {
-    Cart,
-    Collection,
-    Connection,
-    Image,
-    Menu,
-    Page,
-    Product,
-    ShopifyAddToCartOperation,
-    ShopifyCart,
-    ShopifyCartOperation,
-    ShopifyCollection,
-    ShopifyCollectionOperation,
-    ShopifyCollectionProductsOperation,
-    ShopifyCollectionsOperation,
-    ShopifyCreateCartOperation,
-    ShopifyMenuOperation,
-    ShopifyPageOperation,
-    ShopifyPagesOperation,
-    ShopifyProduct,
-    ShopifyProductOperation,
-    ShopifyProductRecommendationsOperation,
-    ShopifyProductsOperation,
-    ShopifyRemoveFromCartOperation,
-    ShopifyUpdateCartOperation,
+  Cart,
+  Collection,
+  Connection,
+  Image,
+  Menu,
+  Page,
+  Product,
+  ShopifyAddToCartOperation,
+  ShopifyCart,
+  ShopifyCartOperation,
+  ShopifyCollection,
+  ShopifyCollectionOperation,
+  ShopifyCollectionProductsOperation,
+  ShopifyCollectionsOperation,
+  ShopifyCreateCartOperation,
+  ShopifyMenuOperation,
+  ShopifyPageOperation,
+  ShopifyPagesOperation,
+  ShopifyProduct,
+  ShopifyProductOperation,
+  ShopifyProductRecommendationsOperation,
+  ShopifyProductsOperation,
+  ShopifyRemoveFromCartOperation,
+  ShopifyUpdateCartOperation,
 } from "./types";
 
 const domain = process.env.SHOPIFY_STORE_DOMAIN
@@ -160,7 +160,7 @@ const reshapeCart = (cart: ShopifyCart): Cart => {
 };
 
 const reshapeCollection = (
-  collection: ShopifyCollection
+  collection: ShopifyCollection,
 ): Collection | undefined => {
   if (!collection) {
     return undefined;
@@ -202,7 +202,7 @@ const reshapeImages = (images: Connection<Image>, productTitle: string) => {
 
 const reshapeProduct = (
   product: ShopifyProduct,
-  filterHiddenProducts: boolean = true
+  filterHiddenProducts: boolean = true,
 ) => {
   if (
     !product ||
@@ -249,7 +249,7 @@ export async function createCart(): Promise<Cart> {
 }
 
 export async function addToCart(
-  lines: { merchandiseId: string; quantity: number }[]
+  lines: { merchandiseId: string; quantity: number }[],
 ): Promise<Cart> {
   if (isLocalMode()) {
     return addToLocalCart(lines);
@@ -284,7 +284,7 @@ export async function removeFromCart(lineIds: string[]): Promise<Cart> {
 }
 
 export async function updateCart(
-  lines: { id: string; merchandiseId: string; quantity: number }[]
+  lines: { id: string; merchandiseId: string; quantity: number }[],
 ): Promise<Cart> {
   if (isLocalMode()) {
     return updateLocalCart(lines);
@@ -331,7 +331,7 @@ export async function getCart(): Promise<Cart | undefined> {
 }
 
 export async function getCollection(
-  handle: string
+  handle: string,
 ): Promise<Collection | undefined> {
   "use cache";
   cacheTag(TAGS.collections);
@@ -383,7 +383,7 @@ export async function getCollectionProducts({
   }
 
   return reshapeProducts(
-    removeEdgesAndNodes(res.body.data.collection.products)
+    removeEdgesAndNodes(res.body.data.collection.products),
   );
 }
 
@@ -415,14 +415,41 @@ export async function getCollections(): Promise<Collection[]> {
     // Filter out the `hidden` collections.
     // Collections that start with `hidden-*` need to be hidden on the search page.
     ...reshapeCollections(shopifyCollections).filter(
-      (collection) => !collection.handle.startsWith("hidden")
+      (collection) => !collection.handle.startsWith("hidden"),
     ),
   ];
 
   return collections;
 }
 
-export async function getMenu(handle: string): Promise<Menu[]> {
+const SHOP_COLLECTION_LINKS: Menu[] = [
+  { title: "Koffie", path: "/search/koffie" },
+  { title: "Thee", path: "/search/thee" },
+];
+
+const CONTACT_LINK: Menu = { title: "Contact", path: "/contact" };
+
+export function withShopCollectionLinks(menu: Menu[]): Menu[] {
+  const extra = SHOP_COLLECTION_LINKS.filter(
+    (link) =>
+      !menu.some(
+        (item) =>
+          item.path === link.path ||
+          item.title.toLowerCase() === link.title.toLowerCase(),
+      ),
+  );
+
+  const withCollections = extra.length ? [...extra, ...menu] : menu;
+  const hasContact = withCollections.some(
+    (item) =>
+      item.path === CONTACT_LINK.path ||
+      item.title.toLowerCase() === CONTACT_LINK.title.toLowerCase(),
+  );
+
+  return hasContact ? withCollections : [...withCollections, CONTACT_LINK];
+}
+
+async function fetchMenu(handle: string): Promise<Menu[]> {
   "use cache";
   cacheTag(TAGS.collections);
   cacheLife({ stale: 0, revalidate: 60, expire: 3600 });
@@ -447,6 +474,11 @@ export async function getMenu(handle: string): Promise<Menu[]> {
         .replace("/pages", ""),
     })) || []
   );
+}
+
+export async function getMenu(handle: string): Promise<Menu[]> {
+  const menu = await fetchMenu(handle);
+  return withShopCollectionLinks(menu.length ? menu : getLocalMenu(handle));
 }
 
 export async function getPage(handle: string): Promise<Page> {
@@ -486,7 +518,7 @@ export async function getProduct(handle: string): Promise<Product | undefined> {
 }
 
 export async function getProductRecommendations(
-  productId: string
+  productId: string,
 ): Promise<Product[]> {
   "use cache";
   cacheTag(TAGS.products);

@@ -1,3 +1,4 @@
+import { isLocalMode } from "lib/local";
 import { getCollections, getPages, getProducts } from "lib/shopify";
 import { baseUrl, validateEnvironmentVariables } from "lib/utils";
 import { MetadataRoute } from "next";
@@ -9,13 +10,28 @@ type Route = {
 
 export const dynamic = "force-dynamic";
 
-export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  validateEnvironmentVariables();
+const STATIC_PATHS = [
+  "",
+  "/about",
+  "/contact",
+  "/verzending",
+  "/retourneren",
+  "/privacy",
+  "/voorwaarden",
+];
 
-  const routesMap = [""].map((route) => ({
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const lastModified = new Date().toISOString();
+  const staticRoutes = STATIC_PATHS.map((route) => ({
     url: `${baseUrl}${route}`,
-    lastModified: new Date().toISOString(),
+    lastModified,
   }));
+
+  if (isLocalMode()) {
+    return staticRoutes;
+  }
+
+  validateEnvironmentVariables();
 
   const collectionsPromise = getCollections().then((collections) =>
     collections.map((collection) => ({
@@ -48,5 +64,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     throw JSON.stringify(error, null, 2);
   }
 
-  return [...routesMap, ...fetchedRoutes];
+  const routes = [...staticRoutes, ...fetchedRoutes];
+  const seen = new Set<string>();
+
+  return routes.filter((route) => {
+    if (seen.has(route.url)) return false;
+    seen.add(route.url);
+    return true;
+  });
 }

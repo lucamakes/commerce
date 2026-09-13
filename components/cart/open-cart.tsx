@@ -13,10 +13,8 @@ export default function OpenCart({
   return (
     <div
       className={clsx(
-        "relative flex h-11 w-11 items-center justify-center border transition-colors",
-        inverted
-          ? "border-white/30 text-white"
-          : "border-neutral-200 text-black dark:border-neutral-700 dark:text-white",
+        "relative flex h-11 w-11 items-center justify-center transition-colors",
+        inverted ? "text-white" : "text-black dark:text-white",
         className,
       )}
     >

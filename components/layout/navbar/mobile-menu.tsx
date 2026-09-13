@@ -39,10 +39,10 @@ export default function MobileMenu({
         onClick={openMobileMenu}
         aria-label="Menu openen"
         className={clsx(
-          "flex h-11 w-11 items-center justify-center border transition-colors lg:hidden",
+          "flex h-11 w-11 items-center justify-center transition-colors lg:hidden",
           inverted
-            ? "border-white/30 text-white hover:bg-white/10"
-            : "border-neutral-200 text-black hover:bg-neutral-50 dark:border-neutral-700 dark:text-white dark:hover:bg-neutral-900",
+            ? "text-white hover:bg-white/10"
+            : "text-black hover:bg-neutral-50 dark:text-white dark:hover:bg-neutral-900",
         )}
       >
         <Bars3Icon className="h-4 w-4" />
@@ -71,7 +71,7 @@ export default function MobileMenu({
           >
             <Dialog.Panel className="fixed inset-y-0 left-0 flex h-full w-full max-w-sm flex-col bg-white px-6 py-6 text-black dark:bg-neutral-950 dark:text-white">
               <button
-                className="mb-8 flex h-11 w-11 items-center justify-center border border-neutral-200 dark:border-neutral-700"
+                className="mb-8 flex h-11 w-11 items-center justify-center"
                 onClick={closeMobileMenu}
                 aria-label="Menu sluiten"
               >

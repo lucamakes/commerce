@@ -2,6 +2,7 @@
 
 import Price from "components/price";
 import { useCart } from "components/cart/cart-context";
+import { COMPANY } from "lib/company";
 import Link from "next/link";
 import { useState } from "react";
 
@@ -67,6 +68,30 @@ export function CheckoutForm() {
           placeholder="Adres"
           className="w-full border border-neutral-300 bg-white px-5 py-3 font-sans text-sm outline-none focus:border-accent dark:border-neutral-700 dark:bg-neutral-950"
         />
+        <p className="font-sans text-xs leading-relaxed text-neutral-500">
+          Door te bestellen ga je akkoord met de{" "}
+          <Link
+            href="/voorwaarden"
+            className="text-accent underline underline-offset-4 hover:text-accent-hover"
+          >
+            algemene voorwaarden
+          </Link>{" "}
+          en het{" "}
+          <Link
+            href="/retourneren"
+            className="text-accent underline underline-offset-4 hover:text-accent-hover"
+          >
+            retourbeleid
+          </Link>
+          . Lees hoe we met gegevens omgaan in de{" "}
+          <Link
+            href="/privacy"
+            className="text-accent underline underline-offset-4 hover:text-accent-hover"
+          >
+            privacyverklaring
+          </Link>
+          .
+        </p>
         <button
           type="submit"
           className="w-full bg-black py-3 text-sm font-medium text-white transition hover:bg-accent"
@@ -98,6 +123,16 @@ export function CheckoutForm() {
             className="font-medium"
           />
         </div>
+        <p className="mt-4 text-sm text-neutral-500">
+          Verzending: Nederland {COMPANY.shipping.netherlands.cost}, gratis
+          vanaf {COMPANY.shipping.netherlands.freeFrom}.{" "}
+          <Link
+            href="/verzending"
+            className="text-accent underline underline-offset-4 hover:text-accent-hover"
+          >
+            Meer over verzending
+          </Link>
+        </p>
       </div>
     </div>
   );

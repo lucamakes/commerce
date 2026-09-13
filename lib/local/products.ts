@@ -183,7 +183,10 @@ const LOCAL_COLLECTIONS: Collection[] = [
     handle: "koffie",
     title: "Koffie",
     description: "Single origin en blends, vers gebrand.",
-    seo: { title: "Koffie", description: "Single origin en blends, vers gebrand." },
+    seo: {
+      title: "Koffie",
+      description: "Single origin en blends, vers gebrand.",
+    },
     path: "/search/koffie",
     updatedAt: new Date().toISOString(),
   },
@@ -191,7 +194,10 @@ const LOCAL_COLLECTIONS: Collection[] = [
     handle: "thee",
     title: "Thee",
     description: "Losse thee en infusies van hoge kwaliteit.",
-    seo: { title: "Thee", description: "Losse thee en infusies van hoge kwaliteit." },
+    seo: {
+      title: "Thee",
+      description: "Losse thee en infusies van hoge kwaliteit.",
+    },
     path: "/search/thee",
     updatedAt: new Date().toISOString(),
   },
@@ -218,6 +224,7 @@ export const LOCAL_MENUS: Record<string, Menu[]> = {
     { title: "Koffie", path: "/search/koffie" },
     { title: "Thee", path: "/search/thee" },
     { title: "Over ons", path: "/about" },
+    { title: "Contact", path: "/contact" },
   ],
   "next-js-frontend-footer-menu": [
     { title: "Koffie", path: "/search/koffie" },
@@ -278,7 +285,9 @@ function buildProduct(local: LocalProduct): Product {
 const products = LOCAL_PRODUCTS.map(buildProduct);
 
 export function getLocalProducts(): Product[] {
-  return products.filter((product) => !product.tags.includes(HIDDEN_PRODUCT_TAG));
+  return products.filter(
+    (product) => !product.tags.includes(HIDDEN_PRODUCT_TAG),
+  );
 }
 
 export function getLocalProduct(handle: string): Product | undefined {
@@ -326,22 +335,34 @@ export function getLocalCollectionProducts({
     result = products.slice(0, 6);
   } else if (collection) {
     const local = LOCAL_PRODUCTS.find((item) => item.collection === collection);
-    if (!local && !LOCAL_COLLECTIONS.some((item) => item.handle === collection)) {
+    if (
+      !local &&
+      !LOCAL_COLLECTIONS.some((item) => item.handle === collection)
+    ) {
       return [];
     }
     result = products.filter((product) => {
-      const source = LOCAL_PRODUCTS.find((item) => item.handle === product.handle);
+      const source = LOCAL_PRODUCTS.find(
+        (item) => item.handle === product.handle,
+      );
       return source?.collection === collection;
     });
   }
 
   if (query) {
     const normalized = query.toLowerCase();
-    result = result.filter(
-      (product) =>
+    result = result.filter((product) => {
+      const source = LOCAL_PRODUCTS.find(
+        (item) => item.handle === product.handle,
+      );
+      return (
         product.title.toLowerCase().includes(normalized) ||
-        product.description.toLowerCase().includes(normalized),
-    );
+        product.description.toLowerCase().includes(normalized) ||
+        product.handle.toLowerCase().includes(normalized) ||
+        source?.subtitle.toLowerCase().includes(normalized) ||
+        source?.collection.toLowerCase().includes(normalized)
+      );
+    });
   }
 
   if (sortKey === "PRICE") {

@@ -43,7 +43,7 @@ export default async function RootLayout({
 
   return (
     <html lang="nl" className={`${dmSans.variable} ${cormorant.variable}`}>
-      <body className="bg-neutral-50 font-sans text-black selection:bg-accent-light selection:text-white dark:bg-neutral-900 dark:text-white">
+      <body className="bg-neutral-50 font-sans text-black selection:bg-accent-light selection:text-white">
         <CartProvider cartPromise={cart}>
           <Navbar />
           <main>

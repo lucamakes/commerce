@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.___disabled___));
+
 @plugin "@tailwindcss/container-queries";
 @plugin "@tailwindcss/typography";
 
@@ -33,10 +35,8 @@
   }
 }
 
-@media (prefers-color-scheme: dark) {
-  html {
-    color-scheme: dark;
-  }
+html {
+  color-scheme: light only;
 }
 
 @supports (font: -apple-system-body) and (-webkit-appearance: none) {
